@@ -17,6 +17,7 @@ typedef struct Context
     bool ignore_empty_files;
     bool keep_shortest;
     bool dry_run;
+    bool interactive;
     std::set<std::string> exclude_dirs;
 
     void set_defaults() {
@@ -25,6 +26,7 @@ typedef struct Context
         ignore_empty_files = false;
         keep_shortest = false;
         dry_run = false;
+        interactive = false;
     }
 
     void usage(int status);

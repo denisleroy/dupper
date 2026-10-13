@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`dupper` is a small C++11 command-line tool that finds duplicate files under a directory tree. Usage: `./dupper [-v] [-m <minsize>] [--exclude-dir <name>]... [--keep-shortest [-n]] <path>`.
+`dupper` is a small C++11 command-line tool that finds duplicate files under a directory tree. Usage: `./dupper [-v] [-m <minsize>] [--exclude-dir <name>]... [--keep-shortest] [-i] [-n] <path>`.
 
 ## Build
 
@@ -28,9 +28,11 @@ The program narrows sets of files through successive comparison passes:
    After every pass, groups with only one file are discarded.
 
    With `--keep-shortest`, `keep_shortest()` then goes over the final groups. When every file in a group is in the same directory, it keeps the file with the shortest name and `unlink`s the rest. Groups that span more than one directory are left alone. With `-n`, nothing is deleted. Instead the shell-quoted `rm` commands are written to `./DELETE.sh`, which is overwritten on each run.
+
+   With `-i`/`--interactive`, `interactive()` runs after that and goes over the remaining groups (it skips the same-directory groups when `--keep-shortest` already handled them). For each group it lists the files and reads a single key press (`1`-`9`, `s` to skip, `q` to quit; groups with more than 9 files read a whole line). The chosen file is kept and the rest are removed, and `-n` applies here too. When every file in a group is in a different directory, the choice is stored in a `Rules` map from the set of directories to the kept directory. These rules last only for the current run. Later groups apply a rule without asking if their directory set matches it exactly, or if their set is a subset of the rule's set and still includes the kept directory (all matching rules must agree). If any directory holds more than one copy, the group is always asked about and never remembered.
 3. **Comparator interface** (`comparator.h`): `run(files, candidates, duplicates)`. `candidates` receives groups that still need checking. `duplicates` is meant for groups that are already confirmed duplicates; right now only `SizeComparator`'s zero-size branch writes to it, and that branch can't be reached. To add a new pass, subclass `Comparator` and slot it into the sequence in `main()`.
 4. **MD5** (`md5.cc`/`md5.h`): this is the RSA reference implementation. `MDFile` was changed to `mmap` a byte range (`map_offset`, `map_len`) instead of reading the file in a loop. The digest is stored as a `std::vector<unsigned char>` so it can be used directly as a `std::map` key.
-5. **Context** (`context.cc`/`context.h`): parses options with `getopt_long` and holds the run-wide settings (`verbose`, `minsize`, `ignore_empty_files`, `keep_shortest`, `dry_run`, `exclude_dirs`, `path`). Every comparator, and `FileScanner`, gets a reference to it.
+5. **Context** (`context.cc`/`context.h`): parses options with `getopt_long` and holds the run-wide settings (`verbose`, `minsize`, `ignore_empty_files`, `keep_shortest`, `dry_run`, `interactive`, `exclude_dirs`, `path`). Every comparator, and `FileScanner`, gets a reference to it.
 
 ## Known rough edges
 
