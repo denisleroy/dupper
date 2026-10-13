@@ -30,6 +30,8 @@ void FileScanner::scan(string path, vector<File>& result)
             result.push_back(File(fullpath));
             break;
         case DT_DIR:
+            if (context.exclude_dirs.count(dentry->d_name))
+                break;
             scan(fullpath,result);
             {
                 struct winsize w;

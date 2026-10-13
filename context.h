@@ -1,6 +1,9 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <set>
+#include <string>
+
 #include "common.h"
 
 typedef struct Context
@@ -12,11 +15,16 @@ typedef struct Context
     const char* path;
     u64 minsize;
     bool ignore_empty_files;
+    bool keep_shortest;
+    bool dry_run;
+    std::set<std::string> exclude_dirs;
 
     void set_defaults() {
         verbose = 0;
         minsize = 0LL;
         ignore_empty_files = false;
+        keep_shortest = false;
+        dry_run = false;
     }
 
     void usage(int status);

@@ -11,9 +11,10 @@ void SizeComparator::run(vector<File>& files,
 {
     map<off_t, vector<File>> table;
 
-    // Collect all sizes.
+    // Collect all sizes, skipping files smaller than --minsize.
     for (auto& f: files) {
-        if (stat(f.path.c_str(), &f.metadata) == 0 && f.metadata.st_size > 0) {
+        if (stat(f.path.c_str(), &f.metadata) == 0 && f.metadata.st_size > 0 &&
+            (u64)f.metadata.st_size >= context.minsize) {
             table[f.metadata.st_size].push_back(f);
         }
     }
